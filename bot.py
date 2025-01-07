@@ -8,8 +8,10 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery
 from aiogram.fsm.storage.memory import MemoryStorage
 from datetime import datetime, timezone, timedelta
-from database import SessionLocal, User, Translation
+from config import SessionLocal, Base, engine
 from dotenv import load_dotenv
+
+from models import User, Translation
 
 load_dotenv() # Load environment variables
 
@@ -387,6 +389,16 @@ async def set_language_prompt(message: types.Message):
         session.close()
 
 
+def init_db():
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database and tables created successfully.")
+    except SQLAlchemyError as e:
+        logger.critical(f"Database initialization failed: {e}")
+    except Exception as e:
+        logger.critical(f"Unexpected error during database initialization: {e}")
+
+
 # Main function to run the bot
 async def main():
     """Start bot polling."""
@@ -399,4 +411,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+    init_db()
     asyncio.run(main())
